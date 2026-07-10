@@ -4,7 +4,8 @@
 
 // URL do Apps Script implantado como Web App.
 // Endpoint que serve o JSON da planilha de encerramentos.
-const API_URL = 'https://script.google.com/macros/s/AKfycbxTjbLXERLcSTgMTM_KRlaEdjDp9bT4hb5pjGzHdYEH400IJTjZNz6GQREBICSTk64PYg/exec';
+// APOSENTADO (10/07/2026): Apps Script substituido pelo motor dados-planilha.js
+const API_URL = null;
 
 // Equipe na ordem que aparece na planilha
 // (Sarah entrou no lugar do Rafael em junho/2026)
@@ -35,13 +36,10 @@ let ultimoLider = null;
 // =========================================================
 
 async function fetchDados() {
-  const url = API_URL || 'data-mock.json';
   try {
-    const r = await fetch(url + (API_URL ? '?_=' + Date.now() : ''));
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    return await r.json();
+    return await montarDadosDaPlanilha();
   } catch (err) {
-    console.error('Erro buscando dados:', err);
+    console.error('Erro lendo a planilha:', err);
     return null;
   }
 }
