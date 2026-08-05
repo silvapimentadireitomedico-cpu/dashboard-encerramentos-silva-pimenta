@@ -562,34 +562,668 @@ footer.footer {
   from { opacity: 0; transform: translateX(-20px); }
   to   { opacity: 1; transform: translateX(0); }
 }
+/* Layout em COLUNAS por grupo (William 05/08): pódio + ranking juntos; tipos e KPIs na faixa de baixo */
+.grupos {
+  display: flex;
+  gap: 26px;
+  padding: 6px 0 2px;
+  align-items: stretch;
+}
+.grupos .grupo-col {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+.grupos .grupo-col .podium-grupo { width: 100%; }
+.grupos .grupo-col .section-title { margin-top: 6px; }
+
+.bottom {
+  display: flex;
+  gap: 26px;
+  align-items: stretch;
+  padding: 8px 0 2px;
+}
+.bottom-tipos { flex: 1.35 1 0; min-width: 0; }
+.bottom-tipos .tipos-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 8px;
+}
+.bottom-tipos .tipo-card { min-width: 0; padding: 6px 12px; }
+.bottom-tipos .tipo-nome { font-size: 14px; }
+.bottom-kpis {
+  flex: 1 1 0;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  align-content: start;
+  margin-top: 34px;
+}
+.kpi-card {
+  border: 1px solid rgba(197, 165, 122, .3);
+  border-radius: 14px;
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(255, 255, 255, .02);
+}
+.kpi-label {
+  font-size: 15px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--gold, #C5A57A);
+  font-weight: 600;
+}
+.kpi-value {
+  font-family: 'Playfair Display', serif;
+  font-size: 40px;
+  font-weight: 700;
+  color: #fff;
+}
+.kpi-revisados .kpi-value { color: #7EE2A8; }
+.kpi-estoque   .kpi-value { color: var(--gold, #C5A57A); }
+.kpi-encerr    .kpi-value { color: #7EE2A8; }
+
+/* Pódio DUPLO (05/08/2026): Advogados x Estagiários, 2 lugares cada */
+.podium-duplo { align-items: stretch; gap: 40px; }
+.podium-duplo .podium-grupo {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px 4px;
+  border: 1px solid rgba(197, 165, 122, .25);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, .02);
+}
+.podium-duplo .podium-grupo-titulo {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--gold, #C5A57A);
+  letter-spacing: .5px;
+}
+.podium-duplo .podium-grupo-linha {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 28px;
+  width: 100%;
+}
+.podium-duplo .podium-grupo-linha .podium-place { flex: 1 1 0; max-width: 46%; }
+.podium-duplo .podium-1 .podium-photo-wrap { width: 140px; }
+.podium-duplo .podium-2 .podium-photo-wrap { width: 112px; }
+
+/* pódio dentro das colunas (layout novo): estilos completos (antes escopados ao .podium-duplo) */
+.grupo-col .podium-grupo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px 6px;
+  border: 1px solid rgba(197, 165, 122, .25);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, .02);
+}
+.grupo-col .podium-grupo-titulo {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--gold, #C5A57A);
+  letter-spacing: .5px;
+}
+.grupo-col .podium-grupo-linha {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 40px;
+  width: 100%;
+}
+.grupo-col .podium-grupo-linha .podium-place { flex: 0 1 auto; max-width: 46%; }
+.grupo-col .podium-1 .podium-photo-wrap { width: 118px; }
+.grupo-col .podium-2 .podium-photo-wrap { width: 96px; }
+.bottom-tipos .tipo-card { padding: 8px 12px; }
+.bottom-tipos .tipo-qtd { font-size: 26px; }
+
+.podium-place {
+  text-align: center;
+  position: relative;
+}
+
+.podium-photo-wrap {
+  position: relative;
+  width: 130px;
+  margin: 0 auto;
+}
+.podium-1 .podium-photo-wrap { width: 155px; }
+
+.podium-photo {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background-color: var(--teal-deep);
+  background-size: cover;
+  background-position: center 25%;
+  background-repeat: no-repeat;
+  border: 4px solid var(--white);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  position: relative;
+  overflow: hidden;
+}
+.podium-1 .podium-photo {
+  border-color: var(--gold);
+  box-shadow:
+    0 0 0 4px var(--gold-deep),
+    0 12px 48px rgba(197, 165, 122, 0.5),
+    0 0 80px rgba(197, 165, 122, 0.3);
+}
+.podium-2 .podium-photo { border-color: #C0C0C0; }
+.podium-3 .podium-photo { border-color: #CD7F32; }
+
+.podium-medal {
+  position: absolute;
+  bottom: -10px;
+  right: 8px;
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: 20px;
+  color: var(--white);
+  border: 3px solid var(--teal-deep);
+  z-index: 2;
+}
+.podium-1 .podium-medal {
+  background: linear-gradient(135deg, var(--gold-bright) 0%, var(--gold) 50%, var(--gold-deep) 100%);
+  color: var(--teal-deep);
+  width: 64px; height: 64px;
+  font-size: 22px;
+}
+.podium-2 .podium-medal {
+  background: linear-gradient(135deg, #E8E8E8 0%, #C0C0C0 50%, #909090 100%);
+  color: var(--teal-deep);
+}
+.podium-3 .podium-medal {
+  background: linear-gradient(135deg, #E0A878 0%, #CD7F32 50%, #8B5A2B 100%);
+  color: var(--white);
+}
+
+.crown {
+  position: absolute;
+  top: -28px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 36px;
+  color: var(--gold);
+  filter: drop-shadow(0 0 8px rgba(197, 165, 122, 0.8));
+  animation: crown-glow 3s ease-in-out infinite;
+}
+@keyframes crown-glow {
+  0%, 100% { filter: drop-shadow(0 0 8px rgba(197, 165, 122, 0.6)); transform: translateX(-50%) scale(1); }
+  50%      { filter: drop-shadow(0 0 16px rgba(197, 165, 122, 1)); transform: translateX(-50%) scale(1.1); }
+}
+
+.podium-name {
+  font-family: 'Playfair Display', serif;
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--white);
+  margin-top: 16px;
+  letter-spacing: 1.5px;
+}
+.podium-1 .podium-name {
+  color: var(--gold);
+  font-size: 20px;
+}
+
+.podium-count {
+  margin-top: 4px;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 8px;
+}
+.podium-count-num {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--white);
+  font-variant-numeric: tabular-nums;
+}
+.podium-1 .podium-count-num {
+  font-size: 38px;
+  color: var(--gold);
+}
+.podium-count-label {
+  font-size: 10px;
+  letter-spacing: 2.5px;
+  color: var(--white-mid);
+  text-transform: uppercase;
+}
+
+/* =========================================================
+   MIDDLE — Ranking + Gráfico lado a lado
+   ========================================================= */
+.middle {
+  display: flex;
+  flex-direction: row;
+  gap: 36px;
+}
+.middle-left, .middle-right {
+  flex: 1 1 50%;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.section-title {
+  font-family: 'Playfair Display', serif;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 3px;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--white-soft);
+}
+
+.ranking-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 4px;
+  flex: 1;
+  align-content: start;
+}
+
+.chart-wrap {
+  flex: 1;
+  background: var(--white-soft);
+  border: 1px solid rgba(197, 165, 122, 0.15);
+  border-radius: 8px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+}
+#chart {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.chart-area {
+  fill: url(#gradGold);
+  opacity: 0.4;
+}
+.chart-line {
+  fill: none;
+  stroke: var(--gold);
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.chart-dot {
+  fill: var(--gold);
+  stroke: var(--teal-deep);
+  stroke-width: 2;
+}
+.chart-dot-today {
+  fill: var(--white);
+  stroke: var(--gold);
+  stroke-width: 3;
+  filter: drop-shadow(0 0 4px var(--gold));
+}
+.chart-axis {
+  stroke: rgba(255, 255, 255, 0.1);
+  stroke-width: 1;
+  stroke-dasharray: 2 4;
+}
+.chart-label {
+  fill: var(--white-mid);
+  font-size: 10px;
+  font-family: 'Inter', sans-serif;
+  letter-spacing: 0.5px;
+}
+.chart-value {
+  fill: var(--gold);
+  font-size: 10px;
+  font-weight: 700;
+  font-family: 'Inter', sans-serif;
+  text-anchor: middle;
+}
+
+.ranking-item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  padding: 3px 0;   /* compactado 05/08: 2 rankings (advogados + estagiários) na mesma coluna */
+  position: relative;
+}
+.ranking-item > .ranking-pos { flex: 0 0 32px; }
+.ranking-item > .ranking-photo { flex: 0 0 44px; }
+.ranking-item > .ranking-bar-wrap { flex: 1 1 auto; }
+.ranking-item > .ranking-qtd { flex: 0 0 auto; }
+
+.ranking-pos {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: 22px;
+  color: var(--white-mid);
+  text-align: center;
+}
+
+.ranking-photo {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background-color: var(--teal-deep);
+  background-size: cover;
+  background-position: center 25%;
+  background-repeat: no-repeat;
+  border: 2px solid var(--gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Playfair Display', serif;
+  font-weight: 600;
+  color: var(--teal-deep);
+  font-size: 16px;
+  overflow: hidden;
+}
+.ranking-photo.with-image {
+  background-color: transparent;
+  color: transparent;
+}
+
+.ranking-bar-wrap {
+  position: relative;
+  height: 28px;
+  background: var(--white-soft);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.ranking-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold-deep) 0%, var(--gold) 100%);
+  border-radius: 4px;
+  transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  position: relative;
+}
+
+/* Pessoa que NÃO fez nenhuma inicial hoje — destaque em vermelho (só no ranking) */
+.ranking-item.sem-hoje .ranking-photo {
+  border-color: var(--alert);
+  box-shadow: 0 0 0 2px rgba(232, 69, 69, 0.3);
+}
+.ranking-item.sem-hoje .ranking-bar {
+  background: linear-gradient(90deg, var(--alert-deep) 0%, var(--alert) 100%);
+}
+.ranking-item.sem-hoje .ranking-qtd {
+  color: var(--alert);
+}
+.ranking-name {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 1.8px;
+  color: var(--white);
+  text-transform: uppercase;
+  z-index: 1;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+.ranking-qtd {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--gold);
+  font-variant-numeric: tabular-nums;
+  min-width: 36px;
+  text-align: right;
+}
+
+/* =========================================================
+   TIPOS
+   ========================================================= */
+.tipos-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  flex: 1 1 auto;
+  align-content: start;
+}
+
+.estoque-card,
+.revisados-card {
+  flex: 0 0 auto;
+  margin-top: 12px;
+  border-radius: 8px;
+  padding: 14px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+.estoque-card {
+  background: linear-gradient(135deg, rgba(197, 165, 122, 0.18) 0%, rgba(197, 165, 122, 0.06) 100%);
+  border: 1px solid rgba(197, 165, 122, 0.45);
+}
+.revisados-card {
+  background: linear-gradient(135deg, rgba(110, 195, 130, 0.20) 0%, rgba(110, 195, 130, 0.06) 100%);
+  border: 1px solid rgba(110, 195, 130, 0.50);
+}
+.estoque-label,
+.revisados-label {
+  font-family: 'Playfair Display', serif;
+  font-size: 13px;
+  letter-spacing: 4px;
+  color: var(--white-mid);
+  text-transform: uppercase;
+}
+.estoque-value,
+.revisados-value {
+  font-family: 'Inter', sans-serif;
+  font-size: 40px;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.estoque-value { color: var(--gold); }
+.revisados-value { color: #7DD09A; }
+
+/* Resumo mensal — 2 cards (Total Entradas | Encerramentos) */
+.resumo-mensal {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 12px;
+  flex: 0 0 auto;
+}
+.resumo-card {
+  border-radius: 8px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+  min-width: 0;
+}
+.resumo-abril {
+  background: linear-gradient(135deg, rgba(147, 197, 253, 0.18) 0%, rgba(147, 197, 253, 0.05) 100%);
+  border: 1px solid rgba(147, 197, 253, 0.45);
+}
+.resumo-total {
+  background: linear-gradient(135deg, rgba(197, 165, 122, 0.22) 0%, rgba(197, 165, 122, 0.06) 100%);
+  border: 1px solid rgba(197, 165, 122, 0.55);
+}
+.resumo-encerr {
+  background: linear-gradient(135deg, rgba(110, 195, 130, 0.22) 0%, rgba(110, 195, 130, 0.06) 100%);
+  border: 1px solid rgba(110, 195, 130, 0.50);
+}
+.resumo-label {
+  font-family: 'Playfair Display', serif;
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--white-mid);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  white-space: nowrap;
+}
+.resumo-value {
+  font-family: 'Inter', sans-serif;
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.resumo-abril .resumo-value { color: #93C5FD; }
+.resumo-total .resumo-value { color: var(--gold-bright); }
+.resumo-encerr .resumo-value { color: #7DD09A; }
+
+.tipo-card {
+  background: var(--white-soft);
+  border: 1px solid rgba(197, 165, 122, 0.2);
+  border-radius: 8px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.tipo-dot {
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.tipo-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 14px;
+}
+.tipo-nome {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: 2.5px;
+  color: var(--white);
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: 'Playfair Display', serif;
+}
+.tipo-qtd {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--gold);
+  line-height: 1;
+  flex: 0 0 auto;
+  font-variant-numeric: tabular-nums;
+}
+
+/* =========================================================
+   FOOTER
+   ========================================================= */
+footer.footer {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 12px;
+  border-top: 1px solid var(--white-soft);
+  font-size: 12px;
+  letter-spacing: 2px;
+  color: var(--white-mid);
+  text-transform: uppercase;
+}
+.footer-today {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--gold);
+}
+.footer-today-icon {
+  font-size: 10px;
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.footer-update {
+  font-size: 11px;
+}
+
+/* =========================================================
+   ENTRADA — animação inicial
+   ========================================================= */
+.podium-place {
+  animation: rise 0.8s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+.podium-2 { animation-delay: 0.1s; }
+.podium-1 { animation-delay: 0.3s; }
+.podium-3 { animation-delay: 0.5s; }
+@keyframes rise {
+  from { opacity: 0; transform: translateY(40px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.ranking-item {
+  animation: fade-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+.ranking-item:nth-child(1) { animation-delay: 0.6s; }
+.ranking-item:nth-child(2) { animation-delay: 0.65s; }
+.ranking-item:nth-child(3) { animation-delay: 0.70s; }
+.ranking-item:nth-child(4) { animation-delay: 0.75s; }
+.ranking-item:nth-child(5) { animation-delay: 0.80s; }
+.ranking-item:nth-child(n+6) { animation-delay: 0.85s; }
+@keyframes fade-in {
+  from { opacity: 0; transform: translateX(-20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
 /* =========================================================
    INSPETORA FERNANDA — detetive com lupa vigiando (05/08/2026)
+   v2: FIXA num canto livre (sem patrulha), menor, sem sobrepor nada
    ========================================================= */
 .inspetora {
   position: absolute;
-  right: 40px;
-  bottom: 64px;
+  right: 215px;
+  bottom: 0px;
   z-index: 50;
   pointer-events: none;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 2px;
-  animation: insp-patrulha 46s ease-in-out infinite;
 }
 .inspetora-lupa {
   position: relative;
-  width: 120px;
-  height: 150px;
+  width: 70px;
+  height: 88px;
   animation: insp-balanco 3.4s ease-in-out infinite;
   transform-origin: 50% 20%;
 }
 .inspetora-lente {
-  width: 112px;
-  height: 112px;
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
-  border: 7px solid var(--gold, #C5A57A);
-  box-shadow: 0 0 0 3px rgba(0,0,0,.35), 0 8px 22px rgba(0,0,0,.45), inset 0 0 18px rgba(255,255,255,.18);
+  border: 5px solid var(--gold, #C5A57A);
+  box-shadow: 0 0 0 2px rgba(0,0,0,.35), 0 6px 16px rgba(0,0,0,.45), inset 0 0 14px rgba(255,255,255,.18);
   background-image: url('fotos/fernanda.png');
   background-size: 150%;
   background-position: center 22%;
@@ -598,53 +1232,43 @@ footer.footer {
 }
 .inspetora-olho {
   position: absolute;
-  top: 22px;
+  top: 12px;
   left: 50%;
   transform: translateX(-50%) scale(0);
-  font-size: 62px;
-  filter: drop-shadow(0 4px 8px rgba(0,0,0,.5));
+  font-size: 36px;
+  filter: drop-shadow(0 3px 6px rgba(0,0,0,.5));
   animation: insp-espiada 9s ease-in-out infinite;
 }
 .inspetora-cabo {
   position: absolute;
-  bottom: -8px;
-  right: 2px;
-  width: 14px;
-  height: 52px;
-  border-radius: 8px;
+  bottom: -4px;
+  right: 0px;
+  width: 11px;
+  height: 32px;
+  border-radius: 7px;
   background: linear-gradient(180deg, #8a6f47, #5d4a2e);
   transform: rotate(-38deg);
-  box-shadow: 0 4px 10px rgba(0,0,0,.4);
+  box-shadow: 0 3px 8px rgba(0,0,0,.4);
 }
 .inspetora-tag {
-  font-size: 13.5px;
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 1px;
+  letter-spacing: .8px;
   color: var(--gold, #C5A57A);
   background: rgba(10, 24, 33, .78);
   border: 1px solid rgba(197, 165, 122, .4);
-  border-radius: 12px;
-  padding: 4px 12px;
+  border-radius: 10px;
+  padding: 3px 9px;
   white-space: nowrap;
 }
-/* patrulha lenta: sai do canto direito, varre até o meio da tela e volta */
-@keyframes insp-patrulha {
-  0%   { transform: translateX(0); }
-  45%  { transform: translateX(-680px); }
-  55%  { transform: translateX(-680px); }
-  100% { transform: translateX(0); }
-}
-/* balanço de quem está inspecionando */
 @keyframes insp-balanco {
-  0%, 100% { transform: rotate(-7deg); }
-  50%      { transform: rotate(9deg); }
+  0%, 100% { transform: rotate(-6deg); }
+  50%      { transform: rotate(8deg); }
 }
-/* a foto dá um zoom na lente (efeito lupa de verdade) */
 @keyframes insp-zoom {
   0%, 62%, 100% { background-size: 150%; background-position: center 22%; }
   70%, 86%      { background-size: 240%; background-position: center 12%; }
 }
-/* o olho esbugalhado dá um POP na lente enquanto a foto está ampliada */
 @keyframes insp-espiada {
   0%, 66%  { transform: translateX(-50%) scale(0); opacity: 0; }
   72%      { transform: translateX(-50%) scale(1.25); opacity: 1; }

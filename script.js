@@ -9,7 +9,11 @@ const API_URL = null;
 
 // Equipe na ordem que aparece na planilha
 // (Sarah entrou no lugar do Rafael em junho/2026)
-const EQUIPE = ['MAX', 'HUGO', 'STELLA', 'SARAH', 'NATALY', 'ISABELLA', 'ANA', 'SUELLEN'];
+const EQUIPE = ['MAX', 'STELLA', 'SARAH', 'NATALY', 'ISABELLA', 'ANA', 'SUELLEN'];
+
+// Divisão do William (05/08/2026): ADVOGADOS x ESTAGIÁRIOS (quem não é advogado = estagiário)
+const ADVOGADOS = ['ANA', 'SUELLEN', 'MAX'];
+const ehAdvogado = (nome) => ADVOGADOS.includes(String(nome || '').trim().toUpperCase());
 
 // Cores das pílulas dos tipos de processo
 const COR_TIPO = {
@@ -141,32 +145,27 @@ function renderHeader(dados) {
 }
 
 function renderPodio(dados) {
-  const top3 = (dados.ranking || []).slice(0, 3);
-
-  // Detecta troca de 1º lugar e toca som (não toca na 1ª carga)
-  const liderAtual = top3[0] ? top3[0].nome : null;
-  if (ultimoLider !== null && liderAtual && liderAtual !== ultimoLider) {
-    tocarSomNovoLider();
-  }
-  if (liderAtual) ultimoLider = liderAtual;
-
-  // ordem na tela: 2º (esq), 1º (centro), 3º (dir)
-  const ordem = [
-    { idx: 1, el: 'podium2' },
-    { idx: 0, el: 'podium1' },
-    { idx: 2, el: 'podium3' }
+  const ranking = dados.ranking || [];
+  const adv = ranking.filter(r => ehAdvogado(r.nome));
+  const est = ranking.filter(r => !ehAdvogado(r.nome));
+  const liderAtual = (adv[0] ? adv[0].nome : '-') + '|' + (est[0] ? est[0].nome : '-');
+  if (ultimoLider !== null && liderAtual !== ultimoLider) tocarSomNovoLider();
+  ultimoLider = liderAtual;
+  const slots = [
+    { item: adv[0], el: 'podium-adv-1' },
+    { item: adv[1], el: 'podium-adv-2' },
+    { item: est[0], el: 'podium-est-1' },
+    { item: est[1], el: 'podium-est-2' }
   ];
-  ordem.forEach(({ idx, el }) => {
+  slots.forEach(({ item, el }) => {
     const nodeEl = document.getElementById(el);
-    const item = top3[idx];
+    if (!nodeEl) return;
     const nameEl = nodeEl.querySelector('.podium-name');
     const numEl = nodeEl.querySelector('.podium-count-num');
     const photoEl = nodeEl.querySelector('.podium-photo');
     if (!item) {
-      nameEl.textContent = '—';
-      numEl.textContent = '0';
-      numEl.dataset.count = 0;
-      photoEl.style.backgroundImage = '';
+      nameEl.textContent = '—'; numEl.textContent = '0'; numEl.dataset.count = 0;
+      photoEl.style.backgroundImage = ''; photoEl.classList.remove('with-image'); photoEl.textContent = '';
       return;
     }
     nameEl.textContent = capitalize(item.nome);
@@ -175,13 +174,10 @@ function renderPodio(dados) {
   });
 }
 
-function renderRanking(dados) {
-  const list = document.getElementById('rankingList');
+function renderRankingLista(elId, ranking, max) {
+  const list = document.getElementById(elId);
+  if (!list) return;
   list.innerHTML = '';
-  const ranking = dados.ranking || [];
-  if (ranking.length === 0) return;
-  const max = Math.max(...ranking.map(r => r.qtd), 1);
-
   ranking.forEach((item, i) => {
     const row = document.createElement('div');
     const semHoje = (item.qtdHoje || 0) === 0;
@@ -196,12 +192,19 @@ function renderRanking(dados) {
       <div class="ranking-qtd">${item.qtd}</div>
     `;
     list.appendChild(row);
-    const photoEl = row.querySelector('.ranking-photo');
-    setFotoOrInicial(photoEl, item.nome);
+    setFotoOrInicial(row.querySelector('.ranking-photo'), item.nome);
     requestAnimationFrame(() => {
       row.querySelector('.ranking-bar').style.width = ((item.qtd / max) * 100) + '%';
     });
   });
+}
+
+function renderRanking(dados) {
+  const ranking = dados.ranking || [];
+  if (ranking.length === 0) return;
+  const max = Math.max(...ranking.map(r => r.qtd), 1);
+  renderRankingLista('rankingAdv', ranking.filter(r => ehAdvogado(r.nome)), max);
+  renderRankingLista('rankingEst', ranking.filter(r => !ehAdvogado(r.nome)), max);
 }
 
 function renderTipos(dados) {
@@ -301,3 +304,29 @@ setTimeout(() => location.reload(), 30 * 60 * 1000);
 
 refresh();
 setInterval(refresh, POLL_MS);
+
+
+// Som da Inspetora Fernanda: "sonar de lupa" curtinho, no MÁXIMO 1x a cada 3 min
+// (Web Audio, mesmo esquema do ding-dong; silencia se autoplay bloquear)
+function tocarSomInspetora() {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    const tom = (freq, inicio, dur, vol) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.value = freq;
+      const t0 = ctx.currentTime + inicio;
+      gain.gain.setValueAtTime(0, t0);
+      gain.gain.linearRampToValueAtTime(vol, t0 + 0.03);
+      gain.gain.exponentialRampToValueAtTime(0.001, t0 + dur);
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(t0); osc.stop(t0 + dur);
+    };
+    tom(660, 0, 0.25, 0.18);      // "tu"
+    tom(990, 0.22, 0.35, 0.16);   // "dum" (subida de quem achou algo)
+  } catch (e) { /* autoplay bloqueado: silencia */ }
+}
+setInterval(tocarSomInspetora, 180000);
