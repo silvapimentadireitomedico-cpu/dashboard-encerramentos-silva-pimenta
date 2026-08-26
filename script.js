@@ -12,7 +12,7 @@ const API_URL = null;
 const EQUIPE = ['MAX', 'STELLA', 'SARAH', 'NATALY', 'ISABELLA', 'ANA', 'SUELLEN'];
 
 // Divisão do William (05/08/2026): ADVOGADOS x ESTAGIÁRIOS (quem não é advogado = estagiário)
-const ADVOGADOS = ['ANA', 'SUELLEN', 'MAX'];
+const ADVOGADOS = ['ANA', 'SUELLEN', 'MAX', 'RODRIGO']; // Rodrigo e advogado (William 25/08/2026)
 const ehAdvogado = (nome) => ADVOGADOS.includes(String(nome || '').trim().toUpperCase());
 
 // Cores das pílulas dos tipos de processo
