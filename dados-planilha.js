@@ -71,11 +71,17 @@ async function montarDadosDaPlanilha() {
   const cel = (r, c) => ws[XLSX.utils.encode_cell({ r: r - 1, c: c - 1 })];
 
   // EQUIPE dinamica: linha de cabecalho, colunas B..I
+  // EQUIPE: le a linha de cabecalho da coluna B ate a ULTIMA coluna com nome (para no primeiro
+  // vazio ou numero). 27/08: a coluna RODRIGO inserida em 25/08 empurrou a SUELLEN pra J e o
+  // limite fixo B..I a apagou do painel. Nunca mais limite fixo.
   const equipe = [];
-  for (let c = 2; c <= 9; c++) {
+  for (let c = 2; c <= 60; c++) {
     const cc = cel(MOTOR_CFG.linhaCabecalho, c);
     const v = cc && cc.v;
-    if (v && String(v).trim()) equipe.push({ nome: String(v).trim().toUpperCase(), col: c });
+    if (v == null || String(v).trim() === '' || cc.t === 'n' || typeof v === 'number') break;
+    const nome = String(v).trim().toUpperCase();
+    if (/^(TOTAL|ESTOQUE|REVISADOS|DATA|RESPONS)/.test(nome)) break;
+    equipe.push({ nome: nome, col: c });
   }
 
   const ranking = {}, rankingHoje = {}, seguroPor = {};
@@ -84,12 +90,17 @@ async function montarDadosDaPlanilha() {
   const agora = new Date();
   const hj = { y: agora.getFullYear(), m: agora.getMonth() + 1, d: agora.getDate() };
 
+  let ultimaData = null, ultimaLinha = -99;
   for (let r = MOTOR_CFG.linhaDados; r <= fim; r++) {
     const dc = cel(r, 1);
-    if (!dc) continue;
     let dt = null;
-    if (dc.t === 'n' && dc.v > 20000 && dc.v < 80000) dt = _serialParaData(dc.v);
-    else if (dc.t === 'd' && dc.v instanceof Date) dt = { y: dc.v.getFullYear(), m: dc.v.getMonth() + 1, d: dc.v.getDate() };
+    if (dc && dc.t === 'n' && dc.v > 20000 && dc.v < 80000) dt = _serialParaData(dc.v);
+    else if (dc && dc.t === 'd' && dc.v instanceof Date) dt = { y: dc.v.getFullYear(), m: dc.v.getMonth() + 1, d: dc.v.getDate() };
+    else if (dc && dc.v != null && String(dc.v).trim() !== '') continue; // texto na coluna A (ex.: TOTAL) = subtotal, pula
+    if (dt) { ultimaData = dt; ultimaLinha = r; }
+    // 27/08: linha SEM data colada a uma linha datada herda a data de cima (a Ana tinha 2 iniciais
+    // assim, linhas 97 e 115, e o painel mostrava 53 em vez dos 55 da planilha).
+    else if (ultimaData && r - ultimaLinha <= 5) dt = ultimaData;
     if (!dt) continue;
     const ehHoje = dt.y === hj.y && dt.m === hj.m && dt.d === hj.d;
     const dataKey = _fmtKey(dt.y, dt.m, dt.d);
