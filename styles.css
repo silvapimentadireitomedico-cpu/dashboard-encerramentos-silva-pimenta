@@ -1332,4 +1332,11 @@ footer.footer {
 }
 .venc-qtd small { font-size: 8px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--white-mid); margin-left: 5px; }
 /* a marca MG é empilhada (logo + nome): garante largura pra não ficar embaixo dos vencedores */
-.header > .brand { min-width: 215px; margin-right: 10px; }
+.header > .brand { min-width: 235px; margin-right: 6px; }
+/* "encerramentos" é palavra longa: no cabeçalho os chips ficam só com o número (o título já diz o quê) */
+.venc-qtd small { display: none; }
+.venc-topo-lista { gap: 8px; }
+.venc-item { padding: 5px 12px 5px 6px; gap: 8px; }
+.venc-name { max-width: 110px; font-size: 14px; }
+.header > .venc-topo.esq { padding-right: 18px; }
+.header > .venc-topo.dir { padding-left: 18px; }
