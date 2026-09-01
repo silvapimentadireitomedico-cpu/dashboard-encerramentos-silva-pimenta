@@ -4,7 +4,7 @@ const MOTOR_CFG = {
   linhaDados: 6,
   abas: function () {
     const MESES = ['JANEIRO','FEVEREIRO','MARÇO','ABRIL','MAIO','JUNHO','JULHO','AGOSTO','SETEMBRO','OUTUBRO','NOVEMBRO','DEZEMBRO'];
-    const hoje = new Date(); const ano = hoje.getFullYear();
+    const hoje = _hoje(); const ano = hoje.getFullYear();
     const base = 'ENCERRAMENTOS - ' + MESES[hoje.getMonth()];
     return [base + ' ' + ano, base];
   },
@@ -60,12 +60,90 @@ function _fmtKey(y, m, d) {
   return y + '-' + String(m).padStart(2, '0') + '-' + String(d).padStart(2, '0');
 }
 
+// ---------------------------------------------------------------
+// 01/09/2026 (William): "vencedores do mês passado" pra premiação no escritório.
+// ?hoje=AAAA-MM-DD na URL finge outra data (só pra testar virada de mês).
+// ---------------------------------------------------------------
+function _hoje() {
+  const m = /[?&]hoje=(\d{4})-(\d{2})-(\d{2})/.exec(location.search || '');
+  return m ? new Date(+m[1], +m[2] - 1, +m[3], 12) : new Date();
+}
+const _MESES_PT = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+
+// Conta por pessoa numa aba, com as MESMAS regras do motor principal (equipe dinâmica,
+// linha sem data herda a de cima, "aguard" não conta). filtro(dt) decide quais linhas entram.
+function _rankingSimples(ws, linhaCab, linhaDados, filtro) {
+  const fim = XLSX.utils.decode_range(ws['!ref'] || 'A1:A1').e.r + 1;
+  const cel = (r, c) => ws[XLSX.utils.encode_cell({ r: r - 1, c: c - 1 })];
+  const equipe = [];
+  for (let c = 2; c <= 60; c++) {
+    const cc = cel(linhaCab, c); const v = cc && cc.v;
+    if (v == null || String(v).trim() === '' || cc.t === 'n' || typeof v === 'number') break;
+    const nome = String(v).trim().toUpperCase();
+    if (/^(TOTAL|ESTOQUE|REVISADOS|DATA|RESPONS)/.test(nome)) break;
+    equipe.push({ nome: nome, col: c, qtd: 0 });
+  }
+  let total = 0, ultimaData = null, ultimaLinha = -99;
+  for (let r = linhaDados; r <= fim; r++) {
+    const dc = cel(r, 1); let dt = null;
+    if (dc && dc.t === 'n' && dc.v > 20000 && dc.v < 80000) dt = _serialParaData(dc.v);
+    else if (dc && dc.t === 'd' && dc.v instanceof Date) dt = { y: dc.v.getFullYear(), m: dc.v.getMonth() + 1, d: dc.v.getDate() };
+    else if (dc && dc.v != null && String(dc.v).trim() !== '') continue;   // TOTAL etc.
+    if (dt) { ultimaData = dt; ultimaLinha = r; }
+    else if (ultimaData && r - ultimaLinha <= 5) dt = ultimaData;
+    if (!dt || (filtro && !filtro(dt))) continue;
+    for (const p of equipe) {
+      const cc = cel(r, p.col); const v = cc && cc.v;
+      if (v == null || String(v).trim() === '') continue;
+      if (String(v).trim().toLowerCase().indexOf('aguard') >= 0) continue;
+      p.qtd++; total++;
+    }
+  }
+  return { ranking: equipe.map(p => ({ nome: p.nome, qtd: p.qtd })).sort((a, b) => b.qtd - a.qtd), total: total };
+}
+const _MESES_ABA = ['JANEIRO', 'FEVEREIRO', 'MARÇO', 'ABRIL', 'MAIO', 'JUNHO', 'JULHO', 'AGOSTO', 'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO'];
+function _infoAba(nome) {   // "ENCERRAMENTOS - AGOSTO 2026" -> {mes: 8, ano: 2026, copia: false}
+  const n = _norm(nome);
+  const m = /ENCERRAMENTOS\s*-\s*([A-Z]+)\s*(\d{4})?/.exec(n);
+  if (!m) return null;
+  const idx = _MESES_ABA.map(_norm).indexOf(m[1]);
+  if (idx < 0) return null;
+  return { mes: idx + 1, ano: m[2] ? +m[2] : null, copia: /COPIA/.test(n) };
+}
+// Aba de encerramentos mais recente (ano, mês); "Cópia de ..." perde pra aba de verdade do mesmo mês.
+function _abaMaisRecente(nomes, anoPadrao) {
+  let melhor = null, chave = -1;
+  for (const nm of nomes) {
+    const i = _infoAba(nm); if (!i) continue;
+    const k = (i.ano || anoPadrao) * 12 + i.mes - (i.copia ? 0.5 : 0);
+    if (k > chave) { chave = k; melhor = nm; }
+  }
+  return melhor;
+}
+// Ranking do mês ANTERIOR (aba mensal dele). null se a aba não existe.
+function _vencedoresMesAnterior(wb, agora) {
+  const ant = new Date(agora.getFullYear(), agora.getMonth() - 1, 1);
+  const y = ant.getFullYear(), m = ant.getMonth() + 1;
+  const base = 'ENCERRAMENTOS - ' + _MESES_ABA[m - 1];
+  const aba = _escolherAba(wb.SheetNames, [base + ' ' + y, base]);
+  if (!aba) return null;
+  const r = _rankingSimples(wb.Sheets[aba], MOTOR_CFG.linhaCabecalho, MOTOR_CFG.linhaDados, null);
+  return { ano: y, mes: m, rotulo: _MESES_PT[m - 1] + ' · ' + y, aba: aba, ranking: r.ranking, total: r.total };
+}
+
 async function montarDadosDaPlanilha() {
   const resp = await fetch(MOTOR_CFG.url + '&_=' + Date.now());
   if (!resp.ok) throw new Error('planilha HTTP ' + resp.status);
   const wb = XLSX.read(await resp.arrayBuffer(), { cellStyles: true });
-  const nomeAba = _escolherAba(wb.SheetNames, MOTOR_CFG.abas());
-  if (!nomeAba) throw new Error('aba nao encontrada: ' + MOTOR_CFG.abas().join(' | '));
+  let nomeAba = _escolherAba(wb.SheetNames, MOTOR_CFG.abas());
+  let avisoAba = null;
+  if (!nomeAba) {
+    // 01/09/2026: virou o mês, a aba nova ainda não existia e a TV ficou em branco o dia
+    // inteiro. Agora mostra a aba mais recente e avisa no rodapé até criarem a do mês.
+    nomeAba = _abaMaisRecente(wb.SheetNames, _hoje().getFullYear());
+    if (!nomeAba) throw new Error('aba nao encontrada: ' + MOTOR_CFG.abas().join(' | '));
+    avisoAba = 'Aba "' + MOTOR_CFG.abas()[0] + '" ainda não existe na planilha · mostrando ' + nomeAba.trim();
+  }
   const ws = wb.Sheets[nomeAba];
   const fim = XLSX.utils.decode_range(ws['!ref'] || 'A1:A1').e.r + 1; // ultima linha (1-based)
   const cel = (r, c) => ws[XLSX.utils.encode_cell({ r: r - 1, c: c - 1 })];
@@ -87,7 +165,7 @@ async function montarDadosDaPlanilha() {
   const ranking = {}, rankingHoje = {}, seguroPor = {};
   equipe.forEach(p => { ranking[p.nome] = 0; rankingHoje[p.nome] = 0; seguroPor[p.nome] = 0; });
   const tipos = {}; let totalGeral = 0; const evolucaoMap = {};
-  const agora = new Date();
+  const agora = _hoje();
   const hj = { y: agora.getFullYear(), m: agora.getMonth() + 1, d: agora.getDate() };
 
   let ultimaData = null, ultimaLinha = -99;
@@ -138,6 +216,8 @@ async function montarDadosDaPlanilha() {
     ranking: rankingArr, tipos: tiposArr, totalGeral: totalGeral,
     evolucao: evolucaoArr, atualizadoEm: new Date().toISOString(), trimestre: nomeAba
   };
+  out.vencedores = _vencedoresMesAnterior(wb, agora);   // mês anterior, pra premiação
+  out.avisoAba = avisoAba;
   if (MOTOR_CFG.extras) Object.assign(out, MOTOR_CFG.extras(cel));
   if (MOTOR_CFG.posProcesso) MOTOR_CFG.posProcesso(out, nomeAba);
   return out;
