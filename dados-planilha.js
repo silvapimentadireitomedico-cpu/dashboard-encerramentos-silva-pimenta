@@ -56,6 +56,17 @@ function _corDaCelula(cell) {
   if (hex === 'FFFFFF' || hex === '000000') return null;
   return hex;
 }
+// 16/11/2026: na aba de NOVEMBRO apagaram uma linha do topo e os nomes subiram da linha 5 para a 4;
+// o painel leu a linha 5 (um número de pasta) como se fosse a equipe e zerou os advogados.
+// Agora o cabeçalho é achado pela linha que tem "DATA" na coluna A: os nomes ficam na linha de baixo
+// e os registros começam na seguinte. Sem "DATA" nas 15 primeiras linhas, vale o fixo do MOTOR_CFG.
+function _linhasDaAba(ws) {
+  for (let r = 1; r <= 15; r++) {
+    const cc = ws[XLSX.utils.encode_cell({ r: r - 1, c: 0 })];
+    if (cc && _norm(cc.v) === 'DATA') return { cab: r + 1, dados: r + 2 };
+  }
+  return { cab: MOTOR_CFG.linhaCabecalho, dados: MOTOR_CFG.linhaDados };
+}
 function _fmtKey(y, m, d) {
   return y + '-' + String(m).padStart(2, '0') + '-' + String(d).padStart(2, '0');
 }
@@ -127,7 +138,8 @@ function _vencedoresMesAnterior(wb, agora) {
   const base = 'ENCERRAMENTOS - ' + _MESES_ABA[m - 1];
   const aba = _escolherAba(wb.SheetNames, [base + ' ' + y, base]);
   if (!aba) return null;
-  const r = _rankingSimples(wb.Sheets[aba], MOTOR_CFG.linhaCabecalho, MOTOR_CFG.linhaDados, null);
+  const li = _linhasDaAba(wb.Sheets[aba]);
+  const r = _rankingSimples(wb.Sheets[aba], li.cab, li.dados, null);
   return { ano: y, mes: m, rotulo: _MESES_PT[m - 1] + ' · ' + y, aba: aba, ranking: r.ranking, total: r.total };
 }
 
@@ -147,6 +159,7 @@ async function montarDadosDaPlanilha() {
   const ws = wb.Sheets[nomeAba];
   const fim = XLSX.utils.decode_range(ws['!ref'] || 'A1:A1').e.r + 1; // ultima linha (1-based)
   const cel = (r, c) => ws[XLSX.utils.encode_cell({ r: r - 1, c: c - 1 })];
+  const LI = _linhasDaAba(ws);
 
   // EQUIPE dinamica: linha de cabecalho, colunas B..I
   // EQUIPE: le a linha de cabecalho da coluna B ate a ULTIMA coluna com nome (para no primeiro
@@ -154,7 +167,7 @@ async function montarDadosDaPlanilha() {
   // limite fixo B..I a apagou do painel. Nunca mais limite fixo.
   const equipe = [];
   for (let c = 2; c <= 60; c++) {
-    const cc = cel(MOTOR_CFG.linhaCabecalho, c);
+    const cc = cel(LI.cab, c);
     const v = cc && cc.v;
     if (v == null || String(v).trim() === '' || cc.t === 'n' || typeof v === 'number') break;
     const nome = String(v).trim().toUpperCase();
@@ -169,7 +182,7 @@ async function montarDadosDaPlanilha() {
   const hj = { y: agora.getFullYear(), m: agora.getMonth() + 1, d: agora.getDate() };
 
   let ultimaData = null, ultimaLinha = -99;
-  for (let r = MOTOR_CFG.linhaDados; r <= fim; r++) {
+  for (let r = LI.dados; r <= fim; r++) {
     const dc = cel(r, 1);
     let dt = null;
     if (dc && dc.t === 'n' && dc.v > 20000 && dc.v < 80000) dt = _serialParaData(dc.v);
